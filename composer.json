@@ -1,0 +1,23 @@
+{
+  "version": "dev-local",
+  "name": "effinix/user-permission-bundle",
+  "description": "Reusable Symfony bundle for permission handling",
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Effinix\\UserPermissionBundle\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.2",
+    "symfony/framework-bundle": "^7.2",
+    "symfony/security-bundle": "^7.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "symfony/phpunit-bridge": "^6.3"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
