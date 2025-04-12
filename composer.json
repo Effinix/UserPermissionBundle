@@ -1,5 +1,4 @@
 {
-  "version": "dev-local",
   "name": "effinix/user-permission-bundle",
   "description": "Reusable Symfony bundle for permission handling",
   "type": "symfony-bundle",
