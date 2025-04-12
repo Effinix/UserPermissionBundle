@@ -1,5 +1,7 @@
 # Easily protect routes with unique permissions
 
+With one easy attribute, you can now protect controller methods and invokable controllers e.g:
+
 ```php
 src/Controller/Controller.php
 <?php declare(strict_types=1);
@@ -25,6 +27,7 @@ class Controller
 }
 ```
 
+Implement UserInterface to provide access to these routes
 ```php
 src/Entity/User.php
 <?php declare(strict_types=1);
