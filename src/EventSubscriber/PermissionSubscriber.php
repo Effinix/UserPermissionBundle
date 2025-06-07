@@ -8,9 +8,9 @@ use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class PermissionSubscriber implements EventSubscriberInterface
 {
@@ -68,7 +68,7 @@ class PermissionSubscriber implements EventSubscriberInterface
 
         foreach ($permissions as $permission) {
             if (!$this->authorizationChecker->isGranted($permission)) {
-                throw new AccessDeniedException("Missing permission: {$permission}");
+                throw new AccessDeniedHttpException("Missing permission: {$permission}");
             }
         }
     }
