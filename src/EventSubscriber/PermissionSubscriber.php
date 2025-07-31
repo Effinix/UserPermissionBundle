@@ -3,24 +3,32 @@
 namespace Effinix\UserPermissionBundle\EventSubscriber;
 
 use Effinix\UserPermissionBundle\Attribute\Attribute\Routing\RequirePermission;
+use Effinix\UserPermissionBundle\Logger\ConfigurableLogger;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerInterface;
+use ReflectionException;
 use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\AuthenticationEvents;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Event\AuthenticationEvent;
+use Symfony\Component\Security\Http\SecurityEvents;
 
 class PermissionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         #[Autowire(service: 'cache.system')]
-        private readonly CacheItemPoolInterface $cache,
+        private readonly CacheItemPoolInterface        $cache,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
+        private readonly ConfigurableLogger            $logger,
         #[Autowire('%effinix.user_permission.cache%')]
-        private readonly bool $performCaching,
-    ) {
+        private readonly bool                          $performCaching,
+    )
+    {
     }
 
     public static function getSubscribedEvents(): array
@@ -44,8 +52,15 @@ class PermissionSubscriber implements EventSubscriberInterface
         $item = $this->cache->getItem($cacheKey);
 
         if (!$item->isHit() || !$this->performCaching) {
-            $reflection = new ReflectionMethod($controller, $method);
-            if (!$reflection) {
+            try {
+                $reflection = new ReflectionMethod($controllerId, $method);
+            } catch (ReflectionException $e) {
+                $this->logger->error(sprintf(
+                    'Reflection failed on %s::%s because of %s',
+                    $controller,
+                    $method,
+                    $e->getMessage(),
+                ));
                 return;
             }
 
@@ -53,7 +68,7 @@ class PermissionSubscriber implements EventSubscriberInterface
             /**
              *
              */
-            $permissions = array_map(function($reflectionAttribute) {
+            $permissions = array_map(function ($reflectionAttribute) {
                 /** @var RequirePermission $attrib */
                 $attrib = $reflectionAttribute->newInstance();
                 return $attrib->permission;
@@ -62,13 +77,23 @@ class PermissionSubscriber implements EventSubscriberInterface
             $item->set($permissions);
             $this->cache->save($item);
         } else {
+            $this->logger->info(sprintf(
+                'Required controller (%s) permissions retrieved from cache',
+                "$controllerId::$method",
+            ));
             /** @var string[] $permissions */
             $permissions = $item->get();
         }
 
         foreach ($permissions as $permission) {
             if (!$this->authorizationChecker->isGranted($permission)) {
-                throw new AccessDeniedHttpException("Missing permission: {$permission}");
+                $this->logger->alert(
+                    "Authorization check failed for user",
+                    [
+                        'user' => $event->getRequest()->getUser(),
+                    ]
+                );
+                throw new AccessDeniedHttpException("error.permission.missing: $permission");
             }
         }
     }

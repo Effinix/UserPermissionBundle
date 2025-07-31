@@ -3,6 +3,8 @@
 namespace Effinix\UserPermissionBundle\DependencyInjection;
 
 use Effinix\UserPermissionBundle\DependencyInversion\PermissionProviderInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -44,6 +46,10 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('do_cache')
                 ->defaultFalse()
                 ->info("Should we cache the route permission reflection step? (recommended for production)")
+            ->end()
+            ->scalarNode('logger')
+                ->defaultValue(NullLogger::class)
+                ->info("Logger which implements Psr\\Log\\LoggerInterface.")
             ->end()
         ->end();
         // @phpcs:enable

@@ -3,6 +3,7 @@
 namespace Effinix\UserPermissionBundle\DependencyInjection;
 
 use Effinix\UserPermissionBundle\DependencyInversion\PermissionProviderInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -30,8 +31,10 @@ class UserPermissionExtension extends Extension
         } else {
             $permissions = $config['permission_store']['permissions'] ?? [];
         }
+
         $container->setParameter('effinix.user_permission.permissions', $permissions);
         $container->setParameter('effinix.user_permission.cache', $config['do_cache'] == 'true');
+        $container->setAlias('effinix.user_permission.logger', $config['logger']);
 
         $loader = new YamlFileLoader(
             $container,
