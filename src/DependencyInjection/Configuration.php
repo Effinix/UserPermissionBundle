@@ -48,7 +48,7 @@ class Configuration implements ConfigurationInterface
                 ->info("Should we cache the route permission reflection step? (recommended for production)")
             ->end()
             ->scalarNode('logger')
-                ->defaultValue(NullLogger::class)
+                ->defaultValue('effinix.user_permission.logger.null')
                 ->info("Logger which implements Psr\\Log\\LoggerInterface.")
             ->end()
         ->end();

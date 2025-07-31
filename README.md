@@ -67,4 +67,5 @@ effinix_user_permission:
 when@dev:
   effinix_user_permission:
     do_cache: false
+    logger: app.my-logger
 ```
