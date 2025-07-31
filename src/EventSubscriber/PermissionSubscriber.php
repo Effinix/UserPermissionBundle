@@ -13,10 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Security\Core\AuthenticationEvents;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Event\AuthenticationEvent;
-use Symfony\Component\Security\Http\SecurityEvents;
 
 class PermissionSubscriber implements EventSubscriberInterface
 {
@@ -53,11 +50,11 @@ class PermissionSubscriber implements EventSubscriberInterface
 
         if (!$item->isHit() || !$this->performCaching) {
             try {
-                $reflection = new ReflectionMethod($controllerId, $method);
+                $reflection = new ReflectionMethod($controller, $method);
             } catch (ReflectionException $e) {
                 $this->logger->error(sprintf(
                     'Reflection failed on %s::%s because of %s',
-                    $controller,
+                    $controllerId,
                     $method,
                     $e->getMessage(),
                 ));
