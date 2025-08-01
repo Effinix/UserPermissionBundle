@@ -5,7 +5,6 @@ namespace Effinix\UserPermissionBundle\EventSubscriber;
 use Effinix\UserPermissionBundle\Attribute\Attribute\Routing\RequirePermission;
 use Effinix\UserPermissionBundle\Logger\ConfigurableLogger;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
 use ReflectionException;
 use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
