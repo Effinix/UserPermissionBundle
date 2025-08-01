@@ -4,22 +4,28 @@ namespace Effinix\UserPermissionBundle\Voter;
 
 use Effinix\UserPermissionBundle\DependencyInversion\UserInterface;
 use Effinix\UserPermissionBundle\Logger\ConfigurableLogger;
-use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class PermissionVoter extends Voter
 {
     public function __construct(
-        #[AutowireIterator('effinix.user_permission_bundle.permissions')]
-        private readonly iterable $permissions,
+        #[Autowire(param: 'effinix.user_permission.permissions')]
+        private readonly array $permissions,
         private readonly ConfigurableLogger $logger,
     ) {
     }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, iterator_to_array($this->permissions), true);
+        $supports = in_array($attribute, $this->permissions, true);
+        if (!$supports) {
+            $this->logger->warning("PermissionVoter abstained due to not supporting $attribute", [
+                'supports' => $this->permissions,
+            ]);
+        }
+        return $supports;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool

@@ -7,6 +7,7 @@ use Effinix\UserPermissionBundle\Logger\ConfigurableLogger;
 use Psr\Cache\CacheItemPoolInterface;
 use ReflectionException;
 use ReflectionMethod;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -17,12 +18,13 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 class PermissionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
+        private readonly Security $security,
         #[Autowire(service: 'cache.system')]
-        private readonly CacheItemPoolInterface        $cache,
+        private readonly CacheItemPoolInterface $cache,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
-        private readonly ConfigurableLogger            $logger,
+        private readonly ConfigurableLogger $logger,
         #[Autowire('%effinix.user_permission.cache%')]
-        private readonly bool                          $performCaching,
+        private readonly bool $performCaching,
     )
     {
     }
@@ -86,7 +88,7 @@ class PermissionSubscriber implements EventSubscriberInterface
                 $this->logger->alert(
                     "Authorization check failed for user",
                     [
-                        'user' => $event->getRequest()->getUser(),
+                        'user' => $this->security->getUser()->getUserIdentifier(),
                     ]
                 );
                 throw new AccessDeniedHttpException("error.permission.missing: $permission");
