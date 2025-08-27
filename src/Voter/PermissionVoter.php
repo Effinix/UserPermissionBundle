@@ -30,8 +30,10 @@ class PermissionVoter extends Voter
             return false;
         }
 
+        if (!$subject) return true;
+
         $retrievedSubject = $this->requestStack->getCurrentRequest()->attributes->get($subject);
-        if ($subject !== null && !$retrievedSubject) {
+        if (!$retrievedSubject) {
             $this->logger->warning("PermissionVoter abstained due to not finding subject $subject", [
                 'subject' => $retrievedSubject,
             ]);
