@@ -6,14 +6,15 @@ use Effinix\UserPermissionBundle\DependencyInversion\PermissionHolderInterface;
 use Effinix\UserPermissionBundle\DependencyInversion\UserInterface;
 use Effinix\UserPermissionBundle\Logger\ConfigurableLogger;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class PermissionVoter extends Voter
 {
+
     public function __construct(
-        private readonly Request $request,
+        private readonly RequestStack $requestStack,
         #[Autowire(param: 'effinix.user_permission.permissions')]
         private readonly array $permissions,
         private readonly ConfigurableLogger $logger,
@@ -29,7 +30,7 @@ class PermissionVoter extends Voter
             return false;
         }
 
-        $retrievedSubject = $this->request->attributes->get($subject);
+        $retrievedSubject = $this->requestStack->getCurrentRequest()->attributes->get($subject);
         if ($subject !== null && !$retrievedSubject) {
             $this->logger->warning("PermissionVoter abstained due to not finding subject $subject", [
                 'subject' => $retrievedSubject,
@@ -48,6 +49,7 @@ class PermissionVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
+        if (!$user) return false;
         if (!$user instanceof UserInterface) {
             $this->logger->warning(
                 "User '{$user->getUserIdentifier()}' does not implement ".UserInterface::class,
@@ -67,7 +69,7 @@ class PermissionVoter extends Voter
         }
 
         /** @var PermissionHolderInterface $retrievedSubject */
-        $retrievedSubject = $this->request->attributes->get($subject);
+        $retrievedSubject = $this->requestStack->getCurrentRequest()->attributes->get($subject);
         return $retrievedSubject->hasPermission($attribute);
     }
 }
