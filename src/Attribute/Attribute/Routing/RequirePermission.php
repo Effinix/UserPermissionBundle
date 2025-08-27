@@ -9,7 +9,7 @@ readonly class RequirePermission
 {
     public function __construct(
         public string $permission,
+        public ?string $context = null,
     ) {
     }
 }
-
