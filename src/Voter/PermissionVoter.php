@@ -70,8 +70,12 @@ class PermissionVoter extends Voter
             return true;
         }
 
-        /** @var PermissionHolderInterface $retrievedSubject */
-        $retrievedSubject = $this->requestStack->getCurrentRequest()->attributes->get($subject);
-        return $retrievedSubject->hasPermission($attribute);
+        if ($subject) {
+            /** @var PermissionHolderInterface $retrievedSubject */
+            $retrievedSubject = $this->requestStack->getCurrentRequest()->attributes->get($subject);
+            return $retrievedSubject->hasPermission($attribute);
+        }
+
+        return false;
     }
 }
